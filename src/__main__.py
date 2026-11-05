@@ -1,26 +1,21 @@
-"""Stage 2: download an index and display direct dependencies."""
+"""Stage 3: recursively build a dependency graph."""
 
 import lzma
 import sys
 
 from .config import parse_config
-from .download import download_index
-from .packages import parse_packages
+from .graph import dependency_graph, edge_list
+from .repository import load_repository
 
 
 def main(argv=None):
-    """Print direct relations and return a clear status on failure."""
+    """Display the filtered graph, reporting source and traversal errors."""
     config = parse_config(argv)
     try:
-        if config.test_repo:
-            raise ValueError("Test repositories are added in stage 3")
-        repo = parse_packages(download_index(config.repo))
-        if config.package not in repo.graph:
-            raise ValueError(f"Package not found: {config.package}")
-        print(f"Direct dependencies of {config.package}:")
-        print(repo.relations.get(config.package, "") or "(none / virtual)")
-        for name in sorted(repo.graph[config.package]):
-            print(name)
+        repo = load_repository(config)
+        graph = dependency_graph(repo.graph, config.package,
+                                 config.max_depth, config.exclude)
+        print(edge_list(graph))
     except (OSError, ValueError, lzma.LZMAError, EOFError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
