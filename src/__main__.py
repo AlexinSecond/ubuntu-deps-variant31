@@ -1,4 +1,4 @@
-"""Stage 3: recursively build a dependency graph."""
+"""Stage 4: recursively display reverse dependencies."""
 
 import lzma
 import sys
@@ -6,6 +6,7 @@ import sys
 from .config import parse_config
 from .graph import dependency_graph, edge_list
 from .repository import load_repository
+from .reverse import reverse_graph
 
 
 def main(argv=None):
@@ -13,8 +14,10 @@ def main(argv=None):
     config = parse_config(argv)
     try:
         repo = load_repository(config)
-        graph = dependency_graph(repo.graph, config.package,
+        source = reverse_graph(repo.graph)
+        graph = dependency_graph(source, config.package,
                                  config.max_depth, config.exclude)
+        print("Reverse dependencies (package -> dependents):")
         print(edge_list(graph))
     except (OSError, ValueError, lzma.LZMAError, EOFError) as error:
         print(f"Error: {error}", file=sys.stderr)
