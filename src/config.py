@@ -54,7 +54,8 @@ def check_output(output, repo):
     """Reject invalid destinations without creating any files."""
     if output.suffix.lower() != ".png" or output.is_dir():
         raise ValueError("--output: specify a PNG file")
-    if output.resolve() == Path(repo).resolve():
+    destinations = [output.resolve(), output.with_suffix(".dot").resolve()]
+    if Path(repo).resolve() in destinations:
         raise ValueError("--output: cannot overwrite the input")
     for parent in output.parents:
         if parent.exists() and not parent.is_dir():

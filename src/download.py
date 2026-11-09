@@ -1,6 +1,7 @@
 """Download and decompress an Ubuntu Packages index using the stdlib."""
 
 import gzip
+import io
 import lzma
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
@@ -22,9 +23,11 @@ def index_url(url):
 def decode_index(data, path):
     """Decode supported gzip, xz, or plain UTF-8 metadata."""
     if path.endswith(".gz"):
-        data = gzip.decompress(data)
+        with gzip.GzipFile(fileobj=io.BytesIO(data)) as stream:
+            data = stream.read(MAX_TEXT + 1)
     elif path.endswith(".xz"):
-        data = lzma.decompress(data)
+        with lzma.LZMAFile(io.BytesIO(data)) as stream:
+            data = stream.read(MAX_TEXT + 1)
     if len(data) > MAX_TEXT:
         raise ValueError("Packages index exceeds the text size limit")
     return data.decode("utf-8-sig")
