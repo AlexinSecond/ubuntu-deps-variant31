@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+USAGE_ERROR_CODE = 2
 
 
 def main():
@@ -22,7 +23,7 @@ def main():
         print(f"\nInvalid input: {arguments!r}", flush=True)
         command = [sys.executable, "-m", "src", "--package", "bash"]
         result = subprocess.run(command + arguments, cwd=ROOT, check=False)
-        if result.returncode != 2:
+        if result.returncode != USAGE_ERROR_CODE:
             raise SystemExit("Expected usage error with exit code 2")
     print("All seven invalid inputs were rejected.")
 
